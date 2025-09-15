@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Add source files
 file(GLOB SOURCES src/*.cpp)
 
-add_executable(MyExecutable ${SOURCES})
+add_executable(prog ${SOURCES})
 
 # Optionally, link libraries
 # target_link_libraries(MyExecutable PRIVATE <library_name>)
