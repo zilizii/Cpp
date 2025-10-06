@@ -5,7 +5,8 @@
 #include <cassert>
 #include <array>
 #include <algorithm>
-#include <utility>  				// for std::move and std::forward
+#include <utility>  	
+#include <memory>			// for std::move and std::forward
 #include "FixedSizedArray.hpp"
 
 
@@ -24,7 +25,18 @@ struct Entity{
 		std::cout << "Log: Destroyed entity " << name << std::endl;
 	}
 
+
 };
+
+constexpr bool operator==(const Entity &a, const Entity &b) {
+	return a.name == b.name && a.x == b.x && a.y == b.y && a.active == b.active;
+}
+constexpr auto operator<=>(const Entity &a, const Entity &b) {
+	if (auto cmp = a.name <=> b.name; cmp != 0) return cmp;
+	if (auto cmp = a.x <=> b.x; cmp != 0) return cmp;
+	if (auto cmp = a.y <=> b.y; cmp != 0) return cmp;
+	return a.active <=> b.active;
+}
 
 void LogEntityForTest(Entity &e);
 
@@ -103,14 +115,35 @@ int main()
 
 	std::cout << std::setw(30) << std::setfill('.') << "Test end" << std::endl;
 
+	// Test of smart pointer
+	// automatic destruction of the object when the pointer goes out of scope
+	// no need to call delete
+	// no memory leak
+	// no dangling pointer
+	// no double free
+	// no need to implement copy constructor and assignment operator
+	std::cout << std::setw(30) << std::setfill('.') << "Test of smart pointer" << std::endl;
+	std::unique_ptr<Entity> pEntity (new Entity("Unique",5,6));
+	LogEntityForTest(*pEntity);
+	std::unique_ptr<Entity> pEntity2 (new Entity("Unique",5,6));
+	LogEntityForTest(*pEntity2);
+	std::cout  << std::boolalpha << "(pEntity <=> pEntity2) == 0 : " << ((*pEntity <=> *pEntity2) == 0 ) << std::endl;
+	std::cout  << std::boolalpha << "(pEntity <=> pEntity2) < 0 : " << ((*pEntity <=> *pEntity2) < 0) << std::endl;
+	// equality operator
+	// should be true because the content of the two entities are the same
+	// even if they are two different objects in memory
+	// beware of the pointer comparison which would be false
+	// the value comparison is done by dereferencing the pointers
+	std::cout  << std::boolalpha << "(pEntity == pEntity2)  : " << (*pEntity == *pEntity2)  << std::endl;
+
 	return 0;
 }
 
 void LogEntityForTest(Entity &e)
 {
     std::cout << std::setw(30) << std::setfill('*') << "Entity test" << std::endl
-    		  << e.name << std::endl
-    		  << e.x << std::endl
-    		  << e.y << std::endl
-    		  << std::boolalpha << e.active << std::endl;
+    		  << "Name : "<< e.name << std::endl
+    		  << "x : "   << e.x << std::endl
+    		  << "y : "   << e.y << std::endl
+    		  << "Active : " << std::boolalpha << e.active << std::endl;
 }
