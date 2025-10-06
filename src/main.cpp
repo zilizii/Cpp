@@ -75,7 +75,7 @@ void PerfectForwardToUseObject(T&& x) {
 
 int main()
 {
-
+{
     Entity e{};
 	std::array<Entity,2> arr = {Entity("Player",1,2), Entity("Enemy",3,4)};
 	
@@ -104,7 +104,8 @@ int main()
 	for(const auto& e : c2){
 		std::cout<< e << std::endl;
 	}
-
+}
+{
 	std::cout << std::setw(30) << std::setfill('.') << "Test Perfect Forwarding" << std::endl;
 
 	testObject object;
@@ -114,7 +115,7 @@ int main()
 	PerfectForwardToUseObject(std::move(object));
 
 	std::cout << std::setw(30) << std::setfill('.') << "Test end" << std::endl;
-
+}
 	// Test of smart pointer
 	// automatic destruction of the object when the pointer goes out of scope
 	// no need to call delete
@@ -125,7 +126,10 @@ int main()
 	std::cout << std::setw(30) << std::setfill('.') << "Test of smart pointer" << std::endl;
 	std::unique_ptr<Entity> pEntity (new Entity("Unique",5,6));
 	LogEntityForTest(*pEntity);
-	std::unique_ptr<Entity> pEntity2 (new Entity("Unique",5,6));
+	// using make_unique is safer because it avoids the possibility of memory leak
+	// if an exception is thrown between the new and the assignment to the unique_ptr
+	// since C++14
+	std::unique_ptr<Entity> pEntity2 = std::make_unique<Entity>( "Unique",5,6);
 	LogEntityForTest(*pEntity2);
 	std::cout  << std::boolalpha << "(pEntity <=> pEntity2) == 0 : " << ((*pEntity <=> *pEntity2) == 0 ) << std::endl;
 	std::cout  << std::boolalpha << "(pEntity <=> pEntity2) < 0 : " << ((*pEntity <=> *pEntity2) < 0) << std::endl;
@@ -134,7 +138,7 @@ int main()
 	// even if they are two different objects in memory
 	// beware of the pointer comparison which would be false
 	// the value comparison is done by dereferencing the pointers
-	std::cout  << std::boolalpha << "(pEntity == pEntity2)  : " << (*pEntity == *pEntity2)  << std::endl;
+	std::cout  << std::boolalpha << "(pEntity == pEntity2)  : " << ( *pEntity == *pEntity2 )  << std::endl;
 
 	return 0;
 }
@@ -142,8 +146,8 @@ int main()
 void LogEntityForTest(Entity &e)
 {
     std::cout << std::setw(30) << std::setfill('*') << "Entity test" << std::endl
-    		  << "Name : "<< e.name << std::endl
-    		  << "x : "   << e.x << std::endl
-    		  << "y : "   << e.y << std::endl
+    		  << "Name   : "<< e.name << std::endl
+    		  << "x      : "   << e.x << std::endl
+    		  << "y      : "   << e.y << std::endl
     		  << "Active : " << std::boolalpha << e.active << std::endl;
 }
